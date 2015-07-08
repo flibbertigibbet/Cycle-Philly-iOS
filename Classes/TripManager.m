@@ -424,6 +424,9 @@
             [userDict setValue:user.rider_history	forKey:@"rider_history"];
             [userDict setValue:appVersion           forKey:@"app_version"];
 		}
+        
+        /* Update firebase user data here */
+        
 		else
 			NSLog(@"TripManager fetch user FAIL");
 		
@@ -600,8 +603,9 @@
     NSData *tripJsonData = [NSJSONSerialization dataWithJSONObject:tripDict options:0 error:&writeError];
     NSString *tripJson = [[[NSString alloc] initWithData:tripJsonData encoding:NSUTF8StringEncoding] autorelease];
     //NSLog(@"trip data %@", tripJson);
-
-        
+    
+//    if([userDict.])
+    
 	// NOTE: device hash added by SaveRequest initWithPostVars
 	NSDictionary *postVars = [NSDictionary dictionaryWithObjectsAndKeys:
 							  tripJson, @"coords",
@@ -612,13 +616,30 @@
                               
 							  [NSString stringWithFormat:@"%d", kSaveProtocolVersion], @"version",
 							  nil];
-	// create save request
+    
+    // Firebase upload - testing
+    Firebase *ref = [[Firebase alloc] initWithUrl:@"https://cyclephilly.firebaseio.com/trips/"];
+    Firebase *post1Ref = [ref childByAutoId];
+    [post1Ref setValue:postVars withCompletionBlock:^(NSError *error, Firebase *ref) {
+        if(error){
+            // bad news
+//            [uploadingView loadingComplete:kServerError delayInterval:1.5];
+            NSLog(@"Firebase fail");
+        } else{
+            // great!
+//            [uploadingView loadingComplete:kSuccessTitle delayInterval:.7];
+            NSLog(@"Firebase success");
+        }
+    }];
+    
+    
+	// create save request - deprecating
 	SaveRequest *saveRequest = [[[SaveRequest alloc] initWithPostVars:postVars with:3 image:NULL] autorelease];
 	
 	// create the connection with the request and start loading the data
 	NSURLConnection *theConnection=[[NSURLConnection alloc] initWithRequest:[saveRequest request] delegate:self];
 	// create loading view to indicate trip is being uploaded
-    uploadingView = [[LoadingView loadingViewInView:parent.parentViewController.view messageString:kSavingTitle] retain];
+    //uploadingView = [[LoadingView loadingViewInView:parent.parentViewController.view messageString:kSavingTitle] retain];
 
     //switch to map w/ trip view
     [(RecordTripViewController *)parent displayUploadedTripMap];
